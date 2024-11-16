@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora con Visualización de Árbol</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            height: 100vh;
+            margin: 0;
+            background-color: #1e1e1e;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: white;
+        }
+        .calculadora-container {
+            background-color: #333;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.5);
+            margin-right: 20px;
+        }
+        #pantalla {
+            width: 100%;
+            padding: 15px;
+            font-size: 24px;
+            text-align: right;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            background-color: #444;
+            color: white;
+            border: none;
+            box-shadow: inset 0 4px 8px rgba(0, 0, 0, 0.4);
+        }
+        .calculadora {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+        .boton {
+            padding: 15px;
+            font-size: 18px;
+            border-radius: 10px;
+            border: none;
+            background-color: #555;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .boton:hover {
+            background-color: #666;
+        }
+        .boton-operador {
+            background-color: #f39c12;
+            color: white;
+        }
+        .boton-operador:hover {
+            background-color: #e58e00;
+        }
+        .boton-igual {
+            background-color: #f1c40f;
+            color: #333;
+        }
+        .boton-igual:hover {
+            background-color: #d4ac0d;
+        }
+        .boton-limpiar {
+            background-color: #e74c3c;
+            color: white;
+        }
+        .boton-limpiar:hover {
+            background-color: #c0392b;
+        }
+        .visualizador-arbol {
+            background-color: #1e1e1e;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.5);
+            overflow: auto;
+            width: 600px;
+            height: 400px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+        .nodo {
+            display: inline-block;
+            background-color: #fff;
+            color: #000;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 20px;
+            position: relative;
+        }
+        svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        line {
+            stroke: white;
+            stroke-width: 2;
+        }
+    </style>
+</head>
+<body>
+    <div class="calculadora-container">
+        <input type="text" id="pantalla" disabled value="0">
+        <div class="calculadora">
+            <button class="boton" onclick="agregarCaracter('(')">(</button>
+            <button class="boton" onclick="agregarCaracter(')')">)</button>
+            <button class="boton boton-limpiar" onclick="limpiarPantalla()">C</button>
+            <button class="boton boton-operador" onclick="agregarCaracter('/')">/</button>
+
+            <button class="boton" onclick="agregarCaracter('7')">7</button>
+            <button class="boton" onclick="agregarCaracter('8')">8</button>
+            <button class="boton" onclick="agregarCaracter('9')">9</button>
+            <button class="boton boton-operador" onclick="agregarCaracter('*')">*</button>
+
+            <button class="boton" onclick="agregarCaracter('4')">4</button>
+            <button class="boton" onclick="agregarCaracter('5')">5</button>
+            <button class="boton" onclick="agregarCaracter('6')">6</button>
+            <button class="boton boton-operador" onclick="agregarCaracter('-')">-</button>
+
+            <button class="boton" onclick="agregarCaracter('1')">1</button>
+            <button class="boton" onclick="agregarCaracter('2')">2</button>
+            <button class="boton" onclick="agregarCaracter('3')">3</button>
+            <button class="boton boton-operador" onclick="agregarCaracter('+')">+</button>
+
+            <button class="boton" onclick="agregarCaracter('0')">0</button>
+            <button class="boton" onclick="agregarCaracter('.')">.</button>
+            <button class="boton boton-igual" onclick="calcularResultado()">=</button>
+            <button class="boton" onclick="analizarExpresion()">Tree</button>
+        </div>
+    </div>
+
+    <div class="visualizador-arbol" id="arbol-container">
+        <h2>Árbol:</h2>
+        <svg id="svg-lineas"></svg>
+        <div id="nodos"></div>
+    </div>
+
+    <script>
+        function agregarCaracter(caracter) {
+            const pantalla = document.getElementById('pantalla');
+            if (pantalla.value === '0') {
+                pantalla.value = caracter;
+            } else {
+                pantalla.value += caracter;
+            }
+        }
+
+        function limpiarPantalla() {
+            document.getElementById('pantalla').value = '0';
+        }
+
+        function calcularResultado() {
+            const pantalla = document.getElementById('pantalla');
+            try {
+                pantalla.value = eval(pantalla.value);
+            } catch {
+                pantalla.value = 'Error';
+            }
+        }
+
+        async function analizarExpresion() {
+            const inputExpresion = document.getElementById('pantalla').value;
+            const response = await fetch('/analizar', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ input: inputExpresion })
+            });
+            const data = await response.json();
+            const arbolContainer = document.getElementById('nodos');
+            const svgContainer = document.getElementById('svg-lineas');
+            arbolContainer.innerHTML = '';
+            svgContainer.innerHTML = '';
+            console.log(data);
+
+            if (data.arbol==null) {
+                arbolContainer.innerHTML = `<p>error</p>`;
+                return;
+            }
+            
+
+            // Start drawing the tree and add lines connecting the nodes
+            drawTree(data.arbol, arbolContainer);
+
+            function drawTree(node, container, parentElement = null) {
+                if (!node) return;
+
+                // Create the node element
+                const nodeElement = document.createElement('div');
+                nodeElement.className = 'nodo';
+                nodeElement.textContent = node[1];
+                container.appendChild(nodeElement);
+
+                // If there's a parent element, draw a line connecting to this node
+                if (parentElement) {
+                    requestAnimationFrame(() => {
+                        const svgContainer = document.getElementById('svg-lineas');
+    
+                        const svgRect = svgContainer.getBoundingClientRect();
+                        const parentRect = parentElement.getBoundingClientRect();
+                        const nodeRect = nodeElement.getBoundingClientRect();
+    
+                        const x1 = parentRect.left + parentRect.width / 2 - svgRect.left;
+                        const y1 = parentRect.top + parentRect.height / 2 - svgRect.top;
+                        const x2 = nodeRect.left + nodeRect.width / 2 - svgRect.left;
+                        const y2 = nodeRect.top + nodeRect.height / 2 - svgRect.top;
+    
+                        // Create a line element
+                        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                        line.setAttribute('x1', x1);
+                        line.setAttribute('y1', y1);
+                        line.setAttribute('x2', x2);
+                        line.setAttribute('y2', y2);
+                        line.setAttribute('stroke', 'white');
+                        line.setAttribute('stroke-width', '4');
+                        svgContainer.appendChild(line);
+                    });
+                }
+
+                // Container for child nodes
+                const childrenContainer = document.createElement('div');
+                childrenContainer.style.display = 'flex';
+                childrenContainer.style.justifyContent = 'space-between';
+                childrenContainer.style.marginTop = '20px';
+                container.appendChild(childrenContainer);
+
+                // Recursively draw child nodes
+                if (node[0] === 'op') {
+                    drawTree(node[2], childrenContainer, nodeElement);
+                    drawTree(node[3], childrenContainer, nodeElement);
+                }
+            }
+
+           
+
+
+
+            // function crearNodoVisual(nodo, contenedor, parentPos = null) {
+            //     if (!nodo) return;
+            //     const nodoDiv = document.createElement('div');
+            //     nodoDiv.className = 'nodo';
+            //     nodoDiv.textContent = nodo[1];
+            //     contenedor.appendChild(nodoDiv);
+
+            //     setTimeout(() => {
+            //         if (parentPos) {
+            //             const rect = nodoDiv.getBoundingClientRect();
+            //             const childX = rect.left + rect.width / 2 + window.pageXOffset;
+            //             const childY = rect.top + window.pageYOffset;
+            //             const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            //             line.setAttribute('x1', parentPos.x);
+            //             line.setAttribute('y1', parentPos.y);
+            //             line.setAttribute('x2', childX);
+            //             line.setAttribute('y2', childY);
+            //             svgContainer.appendChild(line);
+            //         }
+            //     }, 0);
+
+            //     const currentPos = {
+            //         x: nodoDiv.getBoundingClientRect().left + nodoDiv.getBoundingClientRect().width / 2 + window.pageXOffset,
+            //         y: nodoDiv.getBoundingClientRect().bottom + window.pageYOffset
+            //     };
+
+            //     if (nodo[0] === 'op') {
+            //         const contenedorHijos = document.createElement('div');
+            //         contenedorHijos.style.display = 'flex';
+            //         contenedorHijos.style.justifyContent = 'space-between';
+            //         contenedorHijos.style.position = 'relative';
+            //         contenedorHijos.style.marginTop = '20px';
+            //         contenedor.appendChild(contenedorHijos);
+
+            //         crearNodoVisual(nodo[2], contenedorHijos, currentPos);
+            //         crearNodoVisual(nodo[3], contenedorHijos, currentPos);
+            //     }
+            // }
+
+            // crearNodoVisual(data.arbol, arbolContainer);
+        }
+    </script>
+</body>
+</html>
