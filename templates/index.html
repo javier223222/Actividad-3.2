@@ -7,20 +7,25 @@
     <style>
         body {
             display: flex;
-            justify-content: center;
-            align-items: flex-start;
+            flex-direction: column;
+            align-items: center;
             height: 100vh;
             margin: 0;
             background-color: #1e1e1e;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             color: white;
         }
+        .container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
         .calculadora-container {
             background-color: #333;
             padding: 20px;
             border-radius: 15px;
             box-shadow: 0 8px 15px rgba(0, 0, 0, 0.5);
-            margin-right: 20px;
         }
         #pantalla {
             width: 100%;
@@ -111,52 +116,98 @@
             stroke: white;
             stroke-width: 2;
         }
+        .token-list {
+            background-color: #1e1e1e;
+            border-radius: 10px;
+            padding: 10px;
+            margin-top: 20px;
+            width: 90%;
+        }
+        .token-list h3 {
+            margin-top: 0;
+            text-align: center;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        table th, table td {
+            border: 1px solid #444;
+            padding: 8px;
+            text-align: center;
+        }
+        table th {
+            background-color: #333;
+        }
+        table td {
+            background-color: #222;
+        }
     </style>
 </head>
 <body>
-    <div class="calculadora-container">
-        <input type="text" id="pantalla" disabled value="0">
-        <div class="calculadora">
-            <button class="boton" onclick="agregarCaracter('(')">(</button>
-            <button class="boton" onclick="agregarCaracter(')')">)</button>
-            <button class="boton boton-limpiar" onclick="limpiarPantalla()">C</button>
-            <button class="boton boton-operador" onclick="agregarCaracter('/')">/</button>
+    <div class="container">
+        <div class="calculadora-container">
+            <input type="text" id="pantalla" disabled value="0">
+            <div class="calculadora">
+                <button class="boton" onclick="agregarCaracter('(')">(</button>
+                <button class="boton" onclick="agregarCaracter(')')">)</button>
+                <button class="boton boton-limpiar" onclick="limpiarPantalla()">C</button>
+                <button class="boton boton-operador" onclick="agregarCaracter('/')">/</button>
 
-            <button class="boton" onclick="agregarCaracter('7')">7</button>
-            <button class="boton" onclick="agregarCaracter('8')">8</button>
-            <button class="boton" onclick="agregarCaracter('9')">9</button>
-            <button class="boton boton-operador" onclick="agregarCaracter('*')">*</button>
+                <button class="boton" onclick="agregarCaracter('7')">7</button>
+                <button class="boton" onclick="agregarCaracter('8')">8</button>
+                <button class="boton" onclick="agregarCaracter('9')">9</button>
+                <button class="boton boton-operador" onclick="agregarCaracter('*')">*</button>
 
-            <button class="boton" onclick="agregarCaracter('4')">4</button>
-            <button class="boton" onclick="agregarCaracter('5')">5</button>
-            <button class="boton" onclick="agregarCaracter('6')">6</button>
-            <button class="boton boton-operador" onclick="agregarCaracter('-')">-</button>
+                <button class="boton" onclick="agregarCaracter('4')">4</button>
+                <button class="boton" onclick="agregarCaracter('5')">5</button>
+                <button class="boton" onclick="agregarCaracter('6')">6</button>
+                <button class="boton boton-operador" onclick="agregarCaracter('-')">-</button>
 
-            <button class="boton" onclick="agregarCaracter('1')">1</button>
-            <button class="boton" onclick="agregarCaracter('2')">2</button>
-            <button class="boton" onclick="agregarCaracter('3')">3</button>
-            <button class="boton boton-operador" onclick="agregarCaracter('+')">+</button>
+                <button class="boton" onclick="agregarCaracter('1')">1</button>
+                <button class="boton" onclick="agregarCaracter('2')">2</button>
+                <button class="boton" onclick="agregarCaracter('3')">3</button>
+                <button class="boton boton-operador" onclick="agregarCaracter('+')">+</button>
 
-            <button class="boton" onclick="agregarCaracter('0')">0</button>
-            <button class="boton" onclick="agregarCaracter('.')">.</button>
-            <button class="boton boton-igual" onclick="calcularResultado()">=</button>
-            <button class="boton" onclick="analizarExpresion()">Tree</button>
+                <button class="boton" onclick="agregarCaracter('0')">0</button>
+                <button class="boton" onclick="agregarCaracter('.')">.</button>
+                <button class="boton boton-igual" onclick="calcularResultado()">=</button>
+                <button class="boton" onclick="analizarExpresion()">Tree</button>
+                <button class="boton" onclick="generateTable()">Table</button>
+            </div>
+        </div>
+        <div class="visualizador-arbol" id="arbol-container">
+            <h2>Árbol:</h2>
+            <svg id="svg-lineas"></svg>
+            <div id="nodos"></div>
         </div>
     </div>
 
-    <div class="visualizador-arbol" id="arbol-container">
-        <h2>Árbol:</h2>
-        <svg id="svg-lineas"></svg>
-        <div id="nodos"></div>
+    <div class="token-list">
+        <h3>Tokens</h3>
+        <table id="tokenTable">
+            <thead>
+                <tr>
+                    <th>Token</th>
+                    <th>Tipo</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <p id="tokenSummary"></p>
     </div>
 
     <script>
+        let caracteres = ""
         function agregarCaracter(caracter) {
             const pantalla = document.getElementById('pantalla');
             if (pantalla.value === '0') {
                 pantalla.value = caracter;
+                caracteres += caracter;
             } else {
                 pantalla.value += caracter;
+                caracteres += caracter;
             }
         }
 
@@ -168,9 +219,90 @@
             const pantalla = document.getElementById('pantalla');
             try {
                 pantalla.value = eval(pantalla.value);
+                console.log(caracteres);
             } catch {
                 pantalla.value = 'Error';
             }
+        }
+
+        async function generateTable() {
+
+            try{
+                eval(caracteres)
+                const response = await fetch("/table", {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ input: caracteres })
+            });
+            
+            const data = await response.json();
+            console.log(data);
+            const tokenTable = document.getElementById('tokenTable').querySelector('tbody');
+            tokenTable.innerHTML = '';
+            let row;
+            data.tokens.forEach(token => {
+                let typeData=token.type
+                switch (typeData) {
+                    case "NUMBER":
+                        let number=token.token
+                        if(number>0){
+                             row = `<tr><td>${token.token}</td><td>Numero entero </td></tr>`;
+                            tokenTable.insertAdjacentHTML('beforeend', row);
+                        }else{
+                             row = `<tr><td>${token.token}</td><td>Numero negativo</td></tr>`;
+                            tokenTable.insertAdjacentHTML('beforeend', row);
+
+                        }
+                        
+                        
+                        break;
+                    case "MINUS":
+                         row = `<tr><td>${token.token}</td><td>Operador resta</td></tr>`;
+                        tokenTable.insertAdjacentHTML('beforeend', row);
+
+                        break
+                    case "PLUS":
+                            row = `<tr><td>${token.token}</td><td>Operador Suma</td></tr>`;
+                            tokenTable.insertAdjacentHTML('beforeend', row);
+
+                        break
+                    case "TIMES":
+                         row = `<tr><td>${token.token}</td><td>Operador Multiplicacion</td></tr>`;
+                         tokenTable.insertAdjacentHTML('beforeend', row);
+                         break
+                    case "DIVIDE":
+                         row = `<tr><td>${token.token}</td><td>Operador Division</td></tr>`;
+                         tokenTable.insertAdjacentHTML('beforeend', row);
+                         break
+                    case "LPAREN":
+                        row = `<tr><td>${token.token}</td><td>Perentesis de apertura</td></tr>`;
+                        tokenTable.insertAdjacentHTML('beforeend', row);
+                        break
+                    case "RPAREN":
+                        row = `<tr><td>${token.token}</td><td>Perentesis de cierre</td></tr>`;
+                        tokenTable.insertAdjacentHTML('beforeend', row);
+                        break
+
+                    
+
+
+                
+                    default:
+                        break;
+                }
+                
+               
+            });
+
+            }catch(e){
+               alert("Error la operacion esta mal")
+              return
+                
+
+            }
+            
         }
 
         async function analizarExpresion() {
@@ -189,39 +321,33 @@
             svgContainer.innerHTML = '';
             console.log(data);
 
-            if (data.arbol==null) {
+            if (data.arbol == null) {
                 arbolContainer.innerHTML = `<p>error</p>`;
                 return;
             }
-            
 
-            // Start drawing the tree and add lines connecting the nodes
             drawTree(data.arbol, arbolContainer);
 
             function drawTree(node, container, parentElement = null) {
                 if (!node) return;
 
-                // Create the node element
                 const nodeElement = document.createElement('div');
                 nodeElement.className = 'nodo';
                 nodeElement.textContent = node[1];
                 container.appendChild(nodeElement);
 
-                // If there's a parent element, draw a line connecting to this node
                 if (parentElement) {
                     requestAnimationFrame(() => {
                         const svgContainer = document.getElementById('svg-lineas');
-    
                         const svgRect = svgContainer.getBoundingClientRect();
                         const parentRect = parentElement.getBoundingClientRect();
                         const nodeRect = nodeElement.getBoundingClientRect();
-    
+
                         const x1 = parentRect.left + parentRect.width / 2 - svgRect.left;
                         const y1 = parentRect.top + parentRect.height / 2 - svgRect.top;
                         const x2 = nodeRect.left + nodeRect.width / 2 - svgRect.left;
                         const y2 = nodeRect.top + nodeRect.height / 2 - svgRect.top;
-    
-                        // Create a line element
+
                         const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
                         line.setAttribute('x1', x1);
                         line.setAttribute('y1', y1);
@@ -233,64 +359,17 @@
                     });
                 }
 
-                // Container for child nodes
                 const childrenContainer = document.createElement('div');
                 childrenContainer.style.display = 'flex';
                 childrenContainer.style.justifyContent = 'space-between';
                 childrenContainer.style.marginTop = '20px';
                 container.appendChild(childrenContainer);
 
-                // Recursively draw child nodes
                 if (node[0] === 'op') {
                     drawTree(node[2], childrenContainer, nodeElement);
                     drawTree(node[3], childrenContainer, nodeElement);
                 }
             }
-
-           
-
-
-
-            // function crearNodoVisual(nodo, contenedor, parentPos = null) {
-            //     if (!nodo) return;
-            //     const nodoDiv = document.createElement('div');
-            //     nodoDiv.className = 'nodo';
-            //     nodoDiv.textContent = nodo[1];
-            //     contenedor.appendChild(nodoDiv);
-
-            //     setTimeout(() => {
-            //         if (parentPos) {
-            //             const rect = nodoDiv.getBoundingClientRect();
-            //             const childX = rect.left + rect.width / 2 + window.pageXOffset;
-            //             const childY = rect.top + window.pageYOffset;
-            //             const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-            //             line.setAttribute('x1', parentPos.x);
-            //             line.setAttribute('y1', parentPos.y);
-            //             line.setAttribute('x2', childX);
-            //             line.setAttribute('y2', childY);
-            //             svgContainer.appendChild(line);
-            //         }
-            //     }, 0);
-
-            //     const currentPos = {
-            //         x: nodoDiv.getBoundingClientRect().left + nodoDiv.getBoundingClientRect().width / 2 + window.pageXOffset,
-            //         y: nodoDiv.getBoundingClientRect().bottom + window.pageYOffset
-            //     };
-
-            //     if (nodo[0] === 'op') {
-            //         const contenedorHijos = document.createElement('div');
-            //         contenedorHijos.style.display = 'flex';
-            //         contenedorHijos.style.justifyContent = 'space-between';
-            //         contenedorHijos.style.position = 'relative';
-            //         contenedorHijos.style.marginTop = '20px';
-            //         contenedor.appendChild(contenedorHijos);
-
-            //         crearNodoVisual(nodo[2], contenedorHijos, currentPos);
-            //         crearNodoVisual(nodo[3], contenedorHijos, currentPos);
-            //     }
-            // }
-
-            // crearNodoVisual(data.arbol, arbolContainer);
         }
     </script>
 </body>

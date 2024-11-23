@@ -6,7 +6,7 @@ _tabversion = '3.10'
 
 _lr_method = 'LALR'
 
-_lr_signature = 'DIVIDE LPAREN MINUS NUMBER PLUS RPAREN TIMESexpression : expression PLUS term\n                  | expression MINUS termexpression : termterm : term TIMES factor\n            | term DIVIDE factorterm : factorfactor : NUMBERfactor : LPAREN expression RPAREN'
+_lr_signature = 'DIVIDE DOT LPAREN MINUS NUMBER PLUS RPAREN TIMESexpression : expression PLUS term\n                  | expression MINUS termexpression : termterm : term TIMES factor\n            | term DIVIDE factorterm : factorfactor : NUMBERfactor : LPAREN expression RPAREN'
     
 _lr_action_items = {'NUMBER':([0,5,6,7,8,9,],[4,4,4,4,4,4,]),'LPAREN':([0,5,6,7,8,9,],[5,5,5,5,5,5,]),'$end':([1,2,3,4,11,12,13,14,15,],[0,-3,-6,-7,-1,-2,-4,-5,-8,]),'PLUS':([1,2,3,4,10,11,12,13,14,15,],[6,-3,-6,-7,6,-1,-2,-4,-5,-8,]),'MINUS':([1,2,3,4,10,11,12,13,14,15,],[7,-3,-6,-7,7,-1,-2,-4,-5,-8,]),'RPAREN':([2,3,4,10,11,12,13,14,15,],[-3,-6,-7,15,-1,-2,-4,-5,-8,]),'TIMES':([2,3,4,11,12,13,14,15,],[8,-6,-7,8,8,-4,-5,-8,]),'DIVIDE':([2,3,4,11,12,13,14,15,],[9,-6,-7,9,9,-4,-5,-8,]),}
 
@@ -27,12 +27,12 @@ for _k, _v in _lr_goto_items.items():
 del _lr_goto_items
 _lr_productions = [
   ("S' -> expression","S'",1,None,None,None),
-  ('expression -> expression PLUS term','expression',3,'p_expression_binop','app.py',32),
-  ('expression -> expression MINUS term','expression',3,'p_expression_binop','app.py',33),
-  ('expression -> term','expression',1,'p_expression_term','app.py',37),
-  ('term -> term TIMES factor','term',3,'p_term_binop','app.py',41),
-  ('term -> term DIVIDE factor','term',3,'p_term_binop','app.py',42),
-  ('term -> factor','term',1,'p_term_factor','app.py',46),
-  ('factor -> NUMBER','factor',1,'p_factor_num','app.py',50),
-  ('factor -> LPAREN expression RPAREN','factor',3,'p_factor_expr','app.py',54),
+  ('expression -> expression PLUS term','expression',3,'p_expression_binop','app.py',33),
+  ('expression -> expression MINUS term','expression',3,'p_expression_binop','app.py',34),
+  ('expression -> term','expression',1,'p_expression_term','app.py',38),
+  ('term -> term TIMES factor','term',3,'p_term_binop','app.py',42),
+  ('term -> term DIVIDE factor','term',3,'p_term_binop','app.py',43),
+  ('term -> factor','term',1,'p_term_factor','app.py',47),
+  ('factor -> NUMBER','factor',1,'p_factor_num','app.py',51),
+  ('factor -> LPAREN expression RPAREN','factor',3,'p_factor_expr','app.py',55),
 ]

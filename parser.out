@@ -1,5 +1,9 @@
 Created by PLY version 3.11 (http://www.dabeaz.com/ply)
 
+Unused terminals:
+
+    DOT
+
 Grammar
 
 Rule 0     S' -> expression
@@ -15,6 +19,7 @@ Rule 8     factor -> LPAREN expression RPAREN
 Terminals, with rules where they appear
 
 DIVIDE               : 5
+DOT                  : 
 LPAREN               : 8
 MINUS                : 2
 NUMBER               : 7
