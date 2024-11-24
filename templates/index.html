@@ -226,84 +226,69 @@
         }
 
         async function generateTable() {
+    const response = await fetch("/table", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ input: caracteres }),
+    });
+    const data = await response.json();
 
-            try{
-                eval(caracteres)
-                const response = await fetch("/table", {
-                method: "POST",
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ input: caracteres })
-            });
+    // Obtener elementos de la tabla
+    const tableBody = document.querySelector("#tokenTable tbody");
+    const tokenSummary = document.getElementById("tokenSummary");
+
+    // Limpiar tabla existente
+    tableBody.innerHTML = "";
+    console.log(data)
+
+    // Agregar los nuevos tokens a la tabla
+    data.tokens.forEach((token) => {
+        const row = document.createElement("tr");
+        const tokenCell = document.createElement("td");
+        const typeCell = document.createElement("td");
+
+        tokenCell.textContent = token.token;
+       
+        let type=token.type
+        switch (type) {
+            case "NUMBER":
             
-            const data = await response.json();
-            console.log(data);
-            const tokenTable = document.getElementById('tokenTable').querySelector('tbody');
-            tokenTable.innerHTML = '';
-            let row;
-            data.tokens.forEach(token => {
-                let typeData=token.type
-                switch (typeData) {
-                    case "NUMBER":
-                        let number=token.token
-                        if(number>0){
-                             row = `<tr><td>${token.token}</td><td>Numero entero </td></tr>`;
-                            tokenTable.insertAdjacentHTML('beforeend', row);
-                        }else{
-                             row = `<tr><td>${token.token}</td><td>Numero negativo</td></tr>`;
-                            tokenTable.insertAdjacentHTML('beforeend', row);
-
-                        }
-                        
-                        
-                        break;
-                    case "MINUS":
-                         row = `<tr><td>${token.token}</td><td>Operador resta</td></tr>`;
-                        tokenTable.insertAdjacentHTML('beforeend', row);
-
-                        break
-                    case "PLUS":
-                            row = `<tr><td>${token.token}</td><td>Operador Suma</td></tr>`;
-                            tokenTable.insertAdjacentHTML('beforeend', row);
-
-                        break
-                    case "TIMES":
-                         row = `<tr><td>${token.token}</td><td>Operador Multiplicacion</td></tr>`;
-                         tokenTable.insertAdjacentHTML('beforeend', row);
-                         break
-                    case "DIVIDE":
-                         row = `<tr><td>${token.token}</td><td>Operador Division</td></tr>`;
-                         tokenTable.insertAdjacentHTML('beforeend', row);
-                         break
-                    case "LPAREN":
-                        row = `<tr><td>${token.token}</td><td>Perentesis de apertura</td></tr>`;
-                        tokenTable.insertAdjacentHTML('beforeend', row);
-                        break
-                    case "RPAREN":
-                        row = `<tr><td>${token.token}</td><td>Perentesis de cierre</td></tr>`;
-                        tokenTable.insertAdjacentHTML('beforeend', row);
-                        break
-
-                    
-
-
+            typeCell.textContent = "Numero Entero";
                 
-                    default:
-                        break;
-                }
-                
-               
-            });
+                break;
+            case "MINUS":
+                typeCell.textContent = "Operador Resta";
 
-            }catch(e){
-               alert("Error la operacion esta mal")
-              return
-                
+            break
+            case "DOT":
+                 typeCell.textContent = "Punto";
+                break
+            case "LPAREN":
+                typeCell.textContent = "Parentesis de Apertura";
 
-            }
-            
+                break;
+            case "RPAREN":
+            typeCell.textContent = "Parentesis de Cierre";
+                break
+            case "TIMES":
+            typeCell.textContent = "Operador de Multiplicacion";
+                break
+            case "DIVIDE":
+                 typeCell.textContent = "Operador de Division";
+                break
         }
+
+        row.appendChild(tokenCell);
+        row.appendChild(typeCell);
+        tableBody.appendChild(row);
+    });
+
+    // Actualizar resumen
+    tokenSummary.textContent = `Total números: ${data.total_numeros}, Total operadores: ${data.total_operadores}`;
+}
+
 
         async function analizarExpresion() {
             const inputExpresion = document.getElementById('pantalla').value;
